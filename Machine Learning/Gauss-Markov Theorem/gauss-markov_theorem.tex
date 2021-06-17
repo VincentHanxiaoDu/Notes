@@ -1,0 +1,121 @@
+\documentclass[12pt,a4paper]{article}
+\title{Gauss-Markov Theorem (Matrix Form)}
+\author{Hanxiao Du}
+\date{}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{pifont}
+\usepackage{marvosym}
+\usepackage{mathtools}
+\usepackage{environ}
+\usepackage{lipsum}
+\usepackage{undertilde}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\hypersetup{colorlinks=true,
+     linkcolor=black,urlcolor=blue}
+
+\usepackage[total={6in, 10in}]{geometry}
+\newtheorem{theorem}{Theorem}
+\setlength{\parindent}{0pt}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+\DeclareMathOperator*{\argmax}{\arg\!\max}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+
+\begin{document}
+
+
+\maketitle
+
+\begin{theorem}[Gauss-Markov theorem]
+
+Suppose we have a linear model \(y=X\beta+\epsilon\), where \(\epsilon\)
+is a column vector containing all residuals \(\epsilon_i\)'s.
+
+Under the Gauss-Markov assumptions,
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \label{assumption1}The residuals \(\epsilon_i\) have mean zero,
+  i.e.~\(\mathbb{E}[\epsilon_i]=0\) or \(\mathbb{E}[\epsilon]=\vec{0}\).
+\item
+  They are
+  \href{https://en.wikipedia.org/wiki/Homoscedasticity}{homoscedastic},
+  i.e.~they all have the same finite variance:
+
+  \[Var(\epsilon_i)=\sigma^2<\infty\]
+\item
+  Distinct error terms are uncorrelated,
+  i.e.~\(Cov(\epsilon_i, \epsilon_j)=0\ \forall i\neq j\).
+\end{enumerate}
+
+or equivalently to assumption 2 and 3, \(Var(\epsilon) =\sigma^2I\)
+where \(\sigma^2<\infty\),
+
+we have that the ordinary least squares (OLS) of the parameter:
+
+\[\hat\beta_{OLS}=(X^TX)^{-1}X^Ty\]
+
+is the BLUE (Best Linear Unbiased Estimator), i.e. it is the most
+efficient estimator (has lowest variance) among all linear unbiased estimators.
+
+\end{theorem}
+\bigskip
+\begin{proof}
+
+\begin{align}\hat\beta_{OLS}&=(X^TX)^{-1}X^Ty\\&=(X^TX)^{-1}X^T(X\beta +\epsilon)\\&=(X^TX)^{-1}X^TX\beta+(X^TX)^{-1}X^T\epsilon\\&=\beta+(X^TX)^{-1}X^T\epsilon\end{align}
+
+Thus, the unbiasedness of \(\hat\beta_{OLS}\) gives:
+
+\begin{align}\mathbb{E}[\hat\beta_{OLS}] &= \mathbb{E}[\beta+(X^TX)^{-1}X^T\epsilon]\\&=\beta+(X^TX)^{-1}X^T\mathbb{E}[\epsilon]\\&=\beta\text{, since by assumption \ref{assumption1}, \(\mathbb{E}[\epsilon]=\vec{0}\).}\end{align}
+
+Also by assumption 1,
+
+\begin{align}
+\label{var_e}Var(\epsilon)=\mathbb{E}[(\epsilon-\mathbb{E}[\epsilon])(\epsilon-\mathbb{E}[\epsilon])^T]=\mathbb{E}[\epsilon\epsilon^T]=\sigma^2I
+\end{align}
+
+Thus,
+
+\begin{align}\label{var_y}Var(y)=Var(X\beta+\epsilon)=Var(\epsilon)=\sigma^2I\end{align}
+
+Now, we calculate the variance of the \(\hat\beta_{OLS}\):
+
+\begin{align}Var(\hat\beta_{OLS})&=\mathbb{E}[(\hat\beta_{OLS}-\beta)(\hat\beta_{OLS}-\beta)^T]\\&=\mathbb{E}[((X^TX)^{-1}X^T\epsilon)((X^TX)^{-1}X^T\epsilon)^T]\\&=\mathbb{E}[(X^TX)^{-1}X^T\epsilon\epsilon^TX(X^TX)^{-1}]\\&=(X^TX)^{-1}X^T\mathbb{E}[\epsilon\epsilon^T]X(X^TX)^{-1}\\&=(X^TX)^{-1}X^T\sigma^2IX(X^TX)^{-1} \text{ by (\ref{var_e})}\\&=\sigma^2(X^TX)^{-1}X^TX(X^TX)^{-1}\\&=\sigma^2(X^TX)^{-1}\end{align}
+
+Now, for any linear unbiased estimator \(\hat\beta\) for \(\beta\), it
+must can be expressed in linear form:
+
+\[\hat\beta = Cy \]
+
+for some constant matrix \(C\).
+
+Also, let \(D\) be the matrix such that \(C=(X^TX)^{-1}X^T+D\).
+
+Additionally, by the unbiasedness assumption of the estimator
+\(\hat\beta\):
+
+\begin{align}\mathbb{E}[\hat\beta]&=\mathbb{E}[Cy]\\&=\mathbb{E}[((X^TX)^{-1}X^T+D)(X\beta+\epsilon)]\\&=\beta+DX\beta=\beta\\\implies\label{DX} &DX\beta=\utilde{0}\implies DX=\utilde{0}\end{align}
+
+where \(\utilde{0}\) is the zero matrix.
+
+Another fact from linear algebra:
+
+Finally, calculate the variance of \(\hat\beta\):
+
+\begin{align}Var(\hat\beta)&=Var[Cy]\\&=CVar(y)C^T\\&=\sigma^2CC^T \text{ by (\ref{var_y})}\\&=\sigma^2[(X^TX)^{-1}X^T+D][X(X^TX)^{-1}+D^T]\\&=\sigma^2[(X^TX)^{-1}X^TX(X^TX)^{-1}+(X^TX)^{-1}(DX)^t]\\&+DX(X^TX)^{-1}+DD^T]\\&=\sigma^2(X^TX)^{-1}+\sigma^2DD^T\text{ by (\ref{DX})}\\&= Var(\hat\beta_{OLS})+\sigma^2DD^T\end{align}
+
+notice that \(\sigma^2>0\) and \(DD^T\) is
+\href{https://en.wikipedia.org/wiki/Definite_symmetric_matrix}{definite
+symmetric}.
+
+Therefore, \(\hat\beta_{OLS}\) has the lowest variance among all linear unbiased
+estimator so that it is the BLUE (Best Linear Unbiased
+Estimator).\\
+\end{proof}
+
+\end{document}

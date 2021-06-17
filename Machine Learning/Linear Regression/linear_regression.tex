@@ -1,0 +1,286 @@
+\documentclass[12pt,a4paper]{article}
+\title{Linear Regression}
+\author{Hanxiao Du}
+\date{}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{pifont}
+\usepackage{marvosym}
+\usepackage{mathtools}
+\usepackage{environ}
+\usepackage{lipsum}
+\usepackage{undertilde}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\hypersetup{colorlinks=true,
+     linkcolor=black,urlcolor=blue}
+
+\usepackage[total={6in, 10in}]{geometry}
+\newtheorem{theorem}{Theorem}
+\setlength{\parindent}{0pt}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+\DeclareMathOperator*{\argmax}{\arg\!\max}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+
+\begin{document}
+
+
+\maketitle
+\tableofcontents
+
+
+
+\section{The 1-D case}
+
+Our goal is to learn a mapping \(y=f(x)\), where \(x\) and \(y\) are
+both real-valued scalars (i.e.~\(x \in \mathbb{R},\ y\in \mathbb{R}\)).
+Take \(f\) to be an linear function (actually an affine function) of the
+form:
+
+\begin{equation}y=wx+b\end{equation}
+
+where \(w\) is a weight and \(b\) is a bias.
+
+We wish to estimate \(w\) and \(b\) from the \(N\) training pairs
+\(\{(x_i,y_i)\}^N_{i=1}\). Then, once we have to estimates of \(w\) and
+\(b\), we can compute \(y\) for some new \(x\).
+
+We would like to find the parameters (i.e.~\(w\) and \(b\)) such that
+minimize the residual errors (i.e.~\(y_i-f(x_i) = y_i-(wx_i+b)\)).
+
+The most commonly-used way to estimate the parameters is by least-square
+regression/estimation or
+\href{https://en.wikipedia.org/wiki/Ordinary_least_squares}{ordinary
+least square (OLS) estimation}. OLS chooses the parameters of a linear
+function of a set of explanatory variables by the principle of least
+squares. We define an energy function (a.k.a. objective function):
+
+\begin{equation}E(w,b)=\sum^N_{i=1} (y_i-(wx_i+b))^2\end{equation}
+
+This is merely the summation of the squared residual errors. Here, the
+reasons of using squared residual instead of summing all residuals
+directly or summing all the absolute values of the residuals are:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  It is mathematically easier to find the derivatives of the objective
+  function so that the optimization process is much easier.
+\item
+  By
+  \href{https://en.wikipedia.org/wiki/Gauss\%E2\%80\%93Markov_theorem}{Gauss-Markov
+  theorem}, assuming the Gauss-Markov assumptions, the OLS estimator has
+  the lowest sampling variance within the class of linear unbiased
+  estimators (most efficient). The Gauss-Markov assumptions are:
+
+  \begin{itemize}
+  \item
+    The residuals \(\epsilon_i\) have mean zero,
+    i.e.~\(\mathbb{E}[\epsilon_i]=0\)
+  \item
+    The residuals are
+    \href{https://en.wikipedia.org/wiki/Homoscedasticity}{homoscedastic},
+    i.e.~they all have the same finite variance:
+
+    \[Var(\epsilon_i)=\sigma^2<\infty\]
+  \item
+    Distinct error terms are uncorrelated,
+    i.e.~\(Cov(\epsilon_i, \epsilon_j)=0\ \forall i\neq j\).
+  \end{itemize}
+
+  Proof of Gauss-Markov theorem can be found in Section \ref{gauss-markov-thm}
+  
+\item
+  The OLS estimator is equivalent to the maximum likelihood estimator
+  (MLE) under the normality assumption for the error terms.
+\end{enumerate}
+
+Thus we would like to find \(\hat w_{OLS}\) and \(\hat b_{OLS}\) that
+minimize \(E\). That is:
+
+\begin{align}
+\hat b_{OLS} &= \argmin_b E(w,b)\\\hat w_{OLS}&=\argmin_w E(w,\hat b_{OLS})
+\end{align}
+
+Here, we can use the
+\href{https://en.wikipedia.org/wiki/Derivative_test}{derivative test} to
+find the global extrema.
+
+Solve for \(\hat{b}_{OLS}\):
+
+\begin{align}\frac{\partial E}{\partial b} &= \frac{\partial\sum^N_{i=1} (y_i-(wx_i+b))^2}{\partial b}\\&=\sum^N_{i=1}-2(y_i-(wx_i+b)) =0\\\implies& \sum^n_{i=1}y_i-w\sum^n_{i=1}x_i-Nb=0\\\implies&\hat b_{OLS} =\frac{\sum^n_{i=1}y_i-w\sum^n_{i=1}x_i}{N}\\\implies &\hat b_{OLS}=\bar{y}-w\bar{x}\end{align}
+
+where \(\bar{y}=\frac{\sum^n_{i=1}y_i}{N}\) is the average of \(y_i\)'s,
+and \(\bar{x}=\frac{\sum^n_{i=1}x_i}{N}\) is the average of \(x_i\)'s.
+
+Notice that we did not check if \(\frac{\partial^2E}{\partial b^2}>0\)
+to ensure that \(\hat b_{OLS}\) minimizes \(E\), this is because we know
+that \(E\) is a quadratic function of \(b\) and we can conclude that
+\(\hat b_{OLS}\) minimizes \(E\) by just inspecting \(E\). The same
+principle applied in finding \(\hat w_{OLS}\).
+
+Solve for \(\hat w_{OLS}\):
+
+\begin{align}\frac{\partial E}{\partial w} &= \frac{\partial\sum^N_{i=1} (y_i-(wx_i+\hat{b}_{OLS}))^2}{\partial w} \\&=\frac{\partial\sum^N_{i=1} (y_i-(wx_i+\bar{y}-w\bar{x}))^2}{\partial w} \\ &=\frac{\partial \sum_{i=1}^N (y_i-\bar{y}-w(x_i-\bar{x}))^2}{\partial w}\\&=-2\sum_{i=1}^N (x_i-\bar{x}) (y_i-\bar y -w(x_i-\bar x))=0\\ \implies &\sum^N_{i=1}x_iy_i-\bar{y} \sum^N_{i=1}x_i-\bar x\sum^N_{i=1}y_i + \bar x \bar y-w\sum^N_{i=1}(x_i-\bar x)^2=0\\\implies &\hat w_{OLS}=\frac{\sum^N_{i=1}(x_iy_i-\bar y x_i - \bar x y_i+\bar x \bar y)}{\sum^N_{i=1}(x_i - \bar x)^2}\\\implies & \hat w_{OLS}=\frac{\sum^N_{i=1}(y_i-\bar y)(x_i-\bar x)}{\sum^N_{i=1}(x_i-\bar x)^2}\end{align}
+
+Notice that for this equation, the \(b\) in \(E\) is dependent to \(w\),
+thus we need to express \(b\) in terms of \(w\) in order to find the
+derivative of \(w\) properly.
+
+
+\section{Multidimensional Inputs}
+
+For a \(D\)-dimensional linear regression, we can express the linear
+model in terms of matrices:
+
+\begin{align}f(X)&= X\beta\end{align}
+
+where \(\beta\) is a \((D+1) \times 1\) matrix (or a column vector) of
+parameters in the form
+
+\begin{equation}\beta=\begin{bmatrix}\beta_0\\\beta_1\\\vdots\\\beta_D\end{bmatrix}\end{equation}
+
+\(\beta_0\) is the intercept term and \(\beta_i\ \forall i \in [D]\) is
+the coefficient of the i-th attribute/feature.
+
+\(X\) is a \(N \times (D+1)\) design matrix of the form:
+
+\begin{equation}X=\begin{bmatrix}1&x_{1}^{(1)}&x_1^{(2)} &\cdots& x_1^{(D)}\\1&x_{2}^{(1)}&x_2^{(2)} &\cdots& x_2^{(D)}\\ \vdots & \vdots &\vdots &\ddots & \vdots\\ 1&x_{N}^{(1)}&x_N^{(2)} &\cdots& x_N^{(D)}\end{bmatrix}\end{equation}
+
+where \(x_i^{(j)}\ \forall i \in [N] \ \forall j \in [D]\) denotes the
+j-th attribute of the i-th instance. Notice that all the values in the
+first column of \(X\) are all 1's, this is because when we do the matrix
+multiplication \(X\beta\), the intercept term \(\beta_0\) is added to
+each column of the product. i.e.~this is a dummy column for the
+intercept term.
+
+The least-squares objective function is then
+\(E(\beta)=||y-X\beta||_2^2\) if we treat \(y\) and \(X\beta\) as column
+vectors:
+
+\begin{align}X\beta=\begin{bmatrix}\sum^D_{j=1}\beta_jx^{(j)}_1+\beta_0\\\sum^D_{j=1}\beta_jx^{(j)}_2+\beta_0\\\vdots\\\sum^D_{j=1}\beta_jx^{(j)}_N+\beta_0 \end{bmatrix},y=\begin{bmatrix}y_1\\ y_2\\\vdots\\y_N\end{bmatrix}\end{align}
+
+Notice that
+
+\begin{equation}y^TX\beta= (y^TX\beta)^T =(X\beta)^Ty=\beta^TX^Ty\end{equation}
+
+since \(y^TX\beta\) is just a \(1 \times 1\) matrix, thus symmetric.
+Therefore, the squared Euclidean norm
+
+\begin{align}
+E(\beta)&=||y-X\beta||_2^2\\&=(y-X\beta)^T(y-X\beta)\\&=y^Ty-y^TX\beta-(X\beta)^Ty+(X\beta)^TX\beta\\&=\beta^TX^TX\beta-2\beta^TX^Ty+y^Ty\text{ by (21)}
+\end{align}
+
+The derivatives of matrices are calculated by
+\href{https://en.wikipedia.org/wiki/Matrix_calculus\#Scalar-by-matrix}{scalar-by-matrix
+derivative}. This is a derivative formula sheet:
+
+\href{http://www.gatsby.ucl.ac.uk/teaching/courses/sntn/sntn-2017/resources/Matrix_derivatives_cribsheet.pdf}{Matrix\_derivatives\_cribsheet.pdf}
+
+Now, solve for \(\hat\beta_{OLS}\) by using the
+\href{https://en.wikipedia.org/wiki/Derivative_test}{derivative test}:
+
+\begin{align}\frac{\partial E}{\partial \beta} &= 2 X^TX \beta-2X^Ty=0\\\implies&\hat\beta_{OLS}=(X^TX)^{-1}X^Ty\end{align}
+
+Or equivalently, \(\hat\beta_{OLS}=X^+y\), where \(X^+=(X^TX)^{-1}X^T\)
+is called the pseudo-inverse of \(X\). This is also a projection matrix.
+
+\section{Multidimensional Outputs}
+
+In the most general case, both the inputs and outputs may be
+multidimensional.
+
+\section{Appendix}
+\subsection{Gauss-Markov Theorem}\label{gauss-markov-thm}
+\begin{theorem}[Gauss-Markov theorem]
+
+Suppose we have a linear model \(y=X\beta+\epsilon\), where \(\epsilon\)
+is a column vector containing all residuals \(\epsilon_i\)'s.
+
+Under the Gauss-Markov assumptions,
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \label{assumption1}The residuals \(\epsilon_i\) have mean zero,
+  i.e.~\(\mathbb{E}[\epsilon_i]=0\) or \(\mathbb{E}[\epsilon]=\vec{0}\).
+\item
+  They are
+  \href{https://en.wikipedia.org/wiki/Homoscedasticity}{homoscedastic},
+  i.e.~they all have the same finite variance:
+
+  \[Var(\epsilon_i)=\sigma^2<\infty\]
+\item
+  Distinct error terms are uncorrelated,
+  i.e.~\(Cov(\epsilon_i, \epsilon_j)=0\ \forall i\neq j\).
+\end{enumerate}
+
+or equivalently to assumption 2 and 3, \(Var(\epsilon) =\sigma^2I\)
+where \(\sigma^2<\infty\),
+
+we have that the ordinary least squares (OLS) of the parameter:
+
+\[\hat\beta_{OLS}=(X^TX)^{-1}X^Ty\]
+
+is the BLUE (Best Linear Unbiased Estimator), i.e. it is the most
+efficient estimator (has lowest variance) among all linear unbiased estimators.
+
+\end{theorem}
+\bigskip
+\begin{proof}
+
+\begin{align}\hat\beta_{OLS}&=(X^TX)^{-1}X^Ty\\&=(X^TX)^{-1}X^T(X\beta +\epsilon)\\&=(X^TX)^{-1}X^TX\beta+(X^TX)^{-1}X^T\epsilon\\&=\beta+(X^TX)^{-1}X^T\epsilon\end{align}
+
+Thus, the unbiasedness of \(\hat\beta_{OLS}\) gives:
+
+\begin{align}\mathbb{E}[\hat\beta_{OLS}] &= \mathbb{E}[\beta+(X^TX)^{-1}X^T\epsilon]\\&=\beta+(X^TX)^{-1}X^T\mathbb{E}[\epsilon]\\&=\beta\text{, since by assumption \ref{assumption1}, \(\mathbb{E}[\epsilon]=\vec{0}\).}\end{align}
+
+Also by assumption 1,
+
+\begin{align}
+\label{var_e}Var(\epsilon)=\mathbb{E}[(\epsilon-\mathbb{E}[\epsilon])(\epsilon-\mathbb{E}[\epsilon])^T]=\mathbb{E}[\epsilon\epsilon^T]=\sigma^2I
+\end{align}
+
+Thus,
+
+\begin{align}\label{var_y}Var(y)=Var(X\beta+\epsilon)=Var(\epsilon)=\sigma^2I\end{align}
+
+Now, we calculate the variance of the \(\hat\beta_{OLS}\):
+
+\begin{align}Var(\hat\beta_{OLS})&=\mathbb{E}[(\hat\beta_{OLS}-\beta)(\hat\beta_{OLS}-\beta)^T]\\&=\mathbb{E}[((X^TX)^{-1}X^T\epsilon)((X^TX)^{-1}X^T\epsilon)^T]\\&=\mathbb{E}[(X^TX)^{-1}X^T\epsilon\epsilon^TX(X^TX)^{-1}]\\&=(X^TX)^{-1}X^T\mathbb{E}[\epsilon\epsilon^T]X(X^TX)^{-1}\\&=(X^TX)^{-1}X^T\sigma^2IX(X^TX)^{-1} \text{ by (\ref{var_e})}\\&=\sigma^2(X^TX)^{-1}X^TX(X^TX)^{-1}\\&=\sigma^2(X^TX)^{-1}\end{align}
+
+Now, for any linear unbiased estimator \(\hat\beta\) for \(\beta\), it
+must can be expressed in linear form:
+
+\[\hat\beta = Cy \]
+
+for some constant matrix \(C\).
+
+Also, let \(D\) be the matrix such that \(C=(X^TX)^{-1}X^T+D\).
+
+Additionally, by the unbiasedness assumption of the estimator
+\(\hat\beta\):
+
+\begin{align}\mathbb{E}[\hat\beta]&=\mathbb{E}[Cy]\\&=\mathbb{E}[((X^TX)^{-1}X^T+D)(X\beta+\epsilon)]\\&=\beta+DX\beta=\beta\\\implies\label{DX} &DX\beta=\utilde{0}\implies DX=\utilde{0}\end{align}
+
+where \(\utilde{0}\) is the zero matrix.
+
+Another fact from linear algebra:
+
+Finally, calculate the variance of \(\hat\beta\):
+
+\begin{align}Var(\hat\beta)&=Var[Cy]\\&=CVar(y)C^T\\&=\sigma^2CC^T \text{ by (\ref{var_y})}\\&=\sigma^2[(X^TX)^{-1}X^T+D][X(X^TX)^{-1}+D^T]\\&=\sigma^2[(X^TX)^{-1}X^TX(X^TX)^{-1}+(X^TX)^{-1}(DX)^t]\\&+DX(X^TX)^{-1}+DD^T]\\&=\sigma^2(X^TX)^{-1}+\sigma^2DD^T\text{ by (\ref{DX})}\\&= Var(\hat\beta_{OLS})+\sigma^2DD^T\end{align}
+
+notice that \(\sigma^2>0\) and \(DD^T\) is
+\href{https://en.wikipedia.org/wiki/Definite_symmetric_matrix}{definite
+symmetric}.
+
+Therefore, \(\hat\beta_{OLS}\) has the lowest variance among all linear unbiased
+estimator so that it is the BLUE (Best Linear Unbiased
+Estimator).\\
+\end{proof}
+
+\end{document}
