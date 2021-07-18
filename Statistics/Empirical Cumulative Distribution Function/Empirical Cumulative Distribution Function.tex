@@ -1,0 +1,63 @@
+\documentclass[12pt,a4paper]{article}
+\title{Empirical Cumulative Distribution Function (eCDF)}
+\author{Hanxiao Du}
+\date{}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{pifont}
+\usepackage{marvosym}
+\usepackage{mathtools}
+\usepackage{environ}
+\usepackage{lipsum}
+\usepackage{undertilde}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\hypersetup{colorlinks=true,
+     linkcolor=black,urlcolor=blue}
+
+\usepackage[total={6in, 10in}]{geometry}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\setlength{\parindent}{0pt}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+\DeclareMathOperator*{\argmax}{\arg\!\max}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+In statistics, an empirical distribution function (commonly also called an empirical Cumulative Distribution Function, eCDF) is the distribution function associated with the empirical measure of a sample.
+
+\begin{definition}[Empirical distribution function]
+Let $(X_1, \cdots, X_n)$ be n independent, identically distributed real random variables with the common cumulative distribution function $F(t)$. Then, the empirical distribution function is defined as:
+\begin{align}
+\hat{F}_n(t) = \frac{\text{number of elements in the sample} \leq t}{n} = \frac{1}{n} \sum_{i=1}^n \mathbb{I}(X_i \leq t)
+\end{align}
+where $\mathbb{I}(X_i \leq t)$ is the indicator of event $X_i \leq t$.
+\end{definition}
+\begin{theorem}[$\hat{F}_n(t)$ is an unbiased estimator of $F(t)$]
+\ \\
+\begin{proof}
+Let $(X_1, \cdots, X_n)$ be n independent, identically distributed real random variables with the common cumulative distribution function $F(t)$.
+For a fixed $t$, since that $\mathbb{I}(X_i \leq t) = 1$ with probability $F(t)$ and $\mathbb{I}(X_i \leq t) = 0$ with probability $1-F(t)$ by the definition of $F(t)$, the indicator $\mathbb{I}(X_i \leq t)$ is a Bernoulli random variable with parameter $p=F(t)$. Therefore, $\forall i \in [n]$,
+\begin{align}
+\mathbb{E}[\mathbb{I}(X_i \leq t)] = \mathbb{P}[X_i \leq t] = F(t)
+\end{align}
+
+Furthermore,
+\begin{align}
+\mathbb{E}[\hat{F}_n(t)] &= \mathbb{E}[\frac{1}{n} \sum_{i=1}^n \mathbb{I}(X_i \leq t)]\\
+&= \frac{1}{n} \sum_{i=1}^n \mathbb{E}[\mathbb{I}(X_i \leq t)]\\
+&= \frac{1}{n} \sum_{i=1}^n F(t)\\
+&= F(t)
+\end{align}
+Thus, $\hat{F}_n(t)$ is an unbiased estimator of $F(t)$.\\ 
+\end{proof}
+\end{theorem}
+
+\end{document}
